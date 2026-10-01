@@ -114,6 +114,28 @@ dialog::backdrop{background:rgba(4,14,26,.8)}
 .wager input{width:90px;font:900 1rem Nunito,sans-serif;border-radius:8px;border:0;padding:4px 6px}
 @media (max-width:560px){.scores{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (prefers-reduced-motion: reduce){.tile{transition:none}}
+
+/* ---- single-screen layout ---- */
+html,body{height:100%}
+body{display:flex;flex-direction:column;overflow:hidden;padding:clamp(8px,1.6vh,20px) clamp(10px,2vw,24px);gap:clamp(6px,1.2vh,12px)}
+.top,.board-wrap,.legend,.scores{width:100%;max-width:1200px;margin:0 auto}
+.top{align-items:center}
+h1{font-size:clamp(1.4rem,min(5vw,6vh),3rem)}
+.sub{margin-top:2px;font-size:clamp(.75rem,1.8vh,1rem)}
+.btn{padding:6px 12px}
+.board-wrap{flex:1;min-height:0;overflow:hidden}
+.board{height:100%;min-width:0;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:auto repeat(5,minmax(0,1fr));gap:clamp(4px,.8vh,8px);padding:clamp(4px,.8vh,8px)}
+.cat{min-height:0;padding:clamp(4px,1vh,12px) 4px;font-size:clamp(.6rem,min(1.5vw,2vh),1rem)}
+.tile{aspect-ratio:auto;height:100%;min-height:0;gap:2px;font-size:clamp(.55rem,min(1.2vw,1.6vh),.8rem);overflow:hidden}
+.tile .orb{width:auto;height:min(60%,7vh);max-width:60%}
+.legend{margin-top:0;justify-content:center;gap:10px;font-size:clamp(.7rem,1.6vh,.9rem)}
+.legend .orb{width:clamp(14px,2.2vh,22px)}
+.scores{margin-top:0;gap:clamp(6px,1vw,10px)}
+.team{padding:clamp(4px,.8vh,10px) 12px;display:flex;align-items:center;gap:10px}
+.team input{flex:1;min-width:0}
+.team .pts{margin-top:0;font-size:clamp(1.1rem,min(3vw,3.6vh),2rem)}
+@media (max-height:560px){.sub,.legend{display:none}}
+@media (max-width:560px){.tile span{display:none}}
 </style>
 </head>
 <body>
