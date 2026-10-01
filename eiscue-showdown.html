@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Eiscue Showdown</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sea:#0E2A47; --deep:#081B30; --glacier:#BFE6F5; --ice:#F2FBFF;
+  --cyan:#3FA9D6; --buzz:#FFD23F; --miss:#F2667A; --text:#F2FBFF; --muted:#9CC3D8;
+  --bg:#0A2440;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){ --bg:#DDF1FA; --text:#0E2A47; --muted:#3E6A86; --deep:#0E2A47; }
+}
+:root[data-theme="light"]{ --bg:#DDF1FA; --text:#0E2A47; --muted:#3E6A86; --deep:#0E2A47; }
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0;min-height:100%}
+body{
+  background:var(--bg);
+  background-image:radial-gradient(circle at 15% -10%, rgba(191,230,245,.25), transparent 45%),
+                   radial-gradient(circle at 90% 110%, rgba(63,169,214,.25), transparent 50%);
+  color:var(--text); font-family:Nunito, "Segoe UI", system-ui, sans-serif;
+  padding:clamp(12px,3vw,32px);
+}
+h1{
+  font-family:Bungee, Impact, "Arial Black", sans-serif; font-weight:400;
+  font-size:clamp(1.8rem,6vw,3.6rem); margin:0; line-height:1; letter-spacing:.02em;
+  color:var(--glacier);
+  text-shadow:0 3px 0 var(--cyan), 0 6px 0 var(--deep);
+}
+:root[data-theme="light"] h1{color:var(--sea)}
+@media (prefers-color-scheme: light){ :root:not([data-theme="dark"]) h1{color:var(--sea)} }
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;max-width:1100px;margin:0 auto 18px}
+.sub{color:var(--muted);margin:6px 0 0;font-weight:700}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;cursor:pointer}
+.btn{
+  border:2px solid var(--cyan); background:transparent; color:var(--text);
+  padding:8px 14px; border-radius:999px; font-weight:900;
+}
+.btn:hover{background:rgba(63,169,214,.2)}
+.btn.primary{background:var(--buzz);border-color:var(--buzz);color:var(--sea)}
+button:focus-visible{outline:3px solid var(--buzz);outline-offset:3px}
+
+.board-wrap{max-width:1100px;margin:0 auto;overflow-x:auto}
+.board{
+  display:grid; grid-template-columns:repeat(5,minmax(120px,1fr)); gap:8px;
+  min-width:620px; background:var(--deep); padding:8px; border-radius:18px;
+  border:3px solid var(--cyan);
+}
+.cat{
+  font-family:Bungee, Impact, sans-serif; font-size:clamp(.75rem,1.6vw,1rem);
+  background:var(--sea); color:var(--glacier); text-align:center;
+  padding:14px 6px; border-radius:10px; display:flex;align-items:center;justify-content:center;
+  min-height:70px; line-height:1.2;
+}
+.tile{
+  aspect-ratio:4/3; border:0; border-radius:10px;
+  background:linear-gradient(160deg,#16416B,#0E2A47);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  color:var(--muted); font-weight:900; font-size:.75rem;
+  transition:transform .12s;
+}
+.tile:hover:not(:disabled){transform:scale(1.04)}
+.tile:disabled{background:rgba(14,42,71,.4);cursor:default}
+.tile:disabled .orb,.tile:disabled span{visibility:hidden}
+
+/* original capture orbs, one per tier */
+.orb{width:clamp(34px,5vw,54px);aspect-ratio:1;border-radius:50%;position:relative;
+  box-shadow:inset -5px -6px 0 rgba(0,0,0,.22), 0 3px 0 rgba(0,0,0,.35)}
+.orb::after{content:"";position:absolute;width:26%;height:26%;border-radius:50%;
+  top:16%;left:20%;background:rgba(255,255,255,.75)}
+.t1{background:radial-gradient(circle at 50% 60%,#E8F7FF 0 30%,#9ED8F0 31%)}
+.t2{background:conic-gradient(#3FA9D6 0 25%,#7FD3C6 0 50%,#3FA9D6 0 75%,#7FD3C6 0)}
+.t3{background:radial-gradient(circle,#B9A6FF 0 22%,#6C4FD8 23% 45%,#2E1E7A 46%)}
+.t4{background:repeating-linear-gradient(135deg,#DDE6EE 0 6px,#A9B8C6 6px 12px)}
+.t5{background:radial-gradient(circle at 50% 45%,#FFF2B0 0 18%,#FFD23F 19% 55%,#C98F00 56%)}
+
+.scores{max-width:1100px;margin:18px auto 0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.team{background:var(--sea);border:2px solid var(--cyan);border-radius:14px;padding:10px 14px;color:var(--ice)}
+.team input{background:transparent;border:0;border-bottom:2px dashed var(--muted);color:var(--glacier);
+  font:900 1rem Nunito,sans-serif;width:100%;padding:2px 0}
+.team .pts{font-family:Bungee,Impact,sans-serif;font-size:2rem;margin-top:4px}
+.team .pts.neg{color:var(--miss)}
+.legend{max-width:1100px;margin:14px auto 0;display:flex;flex-wrap:wrap;gap:14px;color:var(--muted);font-weight:700;font-size:.9rem}
+.legend div{display:flex;align-items:center;gap:6px}
+.legend .orb{width:22px;box-shadow:inset -2px -3px 0 rgba(0,0,0,.22)}
+
+dialog{
+  border:3px solid var(--cyan); border-radius:22px; background:var(--sea); color:var(--ice);
+  width:min(760px,94vw); padding:clamp(18px,4vw,36px);
+}
+dialog::backdrop{background:rgba(4,14,26,.8)}
+.q-meta{display:flex;align-items:center;gap:10px;color:var(--glacier);font-weight:900}
+.q-meta .orb{width:34px}
+.q-text{font-size:clamp(1.3rem,3.4vw,2rem);font-weight:900;line-height:1.3;margin:18px 0}
+.answer{font-family:Bungee,Impact,sans-serif;color:var(--buzz);font-size:clamp(1.1rem,3vw,1.7rem);
+  border-top:2px dashed var(--muted);padding-top:14px;margin-bottom:6px}
+.note{color:var(--glacier);margin:0 0 14px}
+.award{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.award .row{display:flex;gap:4px;align-items:center;background:var(--deep);padding:4px 6px 4px 12px;border-radius:999px}
+.award .row b{margin-right:6px}
+.ok{background:#3BB273;border:0;color:#fff;border-radius:999px;padding:6px 12px;font-weight:900}
+.no{background:var(--miss);border:0;color:#fff;border-radius:999px;padding:6px 12px;font-weight:900}
+[hidden]{display:none!important}
+.wager{display:grid;gap:8px;margin:12px 0}
+.wager label{display:flex;justify-content:space-between;gap:10px;align-items:center;background:var(--deep);padding:6px 12px;border-radius:12px}
+.wager input{width:90px;font:900 1rem Nunito,sans-serif;border-radius:8px;border:0;padding:4px 6px}
+@media (max-width:560px){.scores{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (prefers-reduced-motion: reduce){.tile{transition:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1>Eiscue Showdown</h1>
+    <p class="sub">Pick an orb. Fancier orb, harder question, bigger points.</p>
+  </div>
+  <div class="tools">
+    <button class="btn primary" id="finalBtn">Final question</button>
+    <button class="btn" id="reset">New game</button>
+  </div>
+</header>
+
+<div class="board-wrap"><div class="board" id="board"></div></div>
+
+<div class="legend" id="legend"></div>
+<section class="scores" id="scores"></section>
+
+<dialog id="qDlg">
+  <div class="q-meta"><div class="orb" id="qOrb"></div><span id="qCat"></span></div>
+  <p class="q-text" id="qText"></p>
+  <button class="btn primary" id="reveal">Show answer</button>
+  <div id="ansBox" hidden>
+    <div class="answer" id="qAns"></div>
+    <p class="note" id="qNote"></p>
+    <div class="award" id="award"></div>
+    <p style="margin-top:14px"><button class="btn" id="closeQ">Back to board</button></p>
+  </div>
+</dialog>
+
+<dialog id="fDlg">
+  <div class="q-meta"><div class="orb t5"></div><span>Final question: Eggs-pert Level</span></div>
+  <div id="fWager">
+    <p class="note" style="margin-top:14px">Each player secretly wagers up to its current score (or up to 500 if it's at zero or below).</p>
+    <div class="wager" id="wagerList"></div>
+    <button class="btn primary" id="lockWagers">Lock wagers and show question</button>
+  </div>
+  <div id="fQ" hidden>
+    <p class="q-text">Eiscue belongs to two Egg Groups. Name both.</p>
+    <button class="btn primary" id="fReveal">Show answer</button>
+    <div id="fAns" hidden>
+      <div class="answer">Water 1 and Field</div>
+      <div class="award" id="fAward"></div>
+      <p style="margin-top:14px"><button class="btn" id="fClose">See final scores</button></p>
+    </div>
+  </div>
+</dialog>
+
+<script>
+const TIERS=[
+  {cls:"t1",name:"Frost Orb",pts:100},
+  {cls:"t2",name:"Tide Orb",pts:200},
+  {cls:"t3",name:"Aurora Orb",pts:300},
+  {cls:"t4",name:"Glacier Orb",pts:400},
+  {cls:"t5",name:"Crown Orb",pts:500},
+];
+const CATS=[
+  {name:"Face Off",qs:[
+    ["What is Eiscue's one and only Ability?","Ice Face","It has no second Ability and no Hidden Ability."],
+    ["After its ice block breaks, Eiscue switches to what form?","Noice Face",""],
+    ["Physical or special: which kind of attack breaks Eiscue's ice?","Physical","Special attacks hit it normally and leave the ice intact."],
+    ["In Sword and Shield, what weather lets Eiscue rebuild its ice face?","Hail",""],
+    ["In Scarlet and Violet, hail was replaced by what weather that also restores the ice?","Snow (Snowscape)",""],
+  ]},
+  {name:"By the Numbers",qs:[
+    ["What is Eiscue's National Pokédex number?","#875",""],
+    ["What is Eiscue's base stat total? (Hint: it's the same in both forms.)","470",""],
+    ["What is Noice Face Eiscue's base Speed?","130","Up from just 50 in Ice Face form."],
+    ["What is Ice Face Eiscue's base Defense?","110","It drops to 70 when the ice breaks."],
+    ["What is Ice Face Eiscue's base Speed?","50",""],
+  ]},
+  {name:"Galar Getaway",qs:[
+    ["Eiscue was first discovered in which region?","Galar",""],
+    ["Which generation introduced Eiscue?","Generation 8",""],
+    ["Eiscue is a version exclusive. Which version?","Pokémon Shield",""],
+    ["Which Rock-type Pokémon is Eiscue's counterpart exclusive to Sword?","Stonjourner",""],
+    ["What is Eiscue's Japanese name?","Koorippo",""],
+  ]},
+  {name:"Penguin Profile",qs:[
+    ["Eiscue is classified as the ___ Pokémon.","Penguin",""],
+    ["What is Eiscue's type?","Pure Ice",""],
+    ["How many evolutions does Eiscue have?","None","It doesn't evolve from or into anything."],
+    ["According to its Pokédex entries, how does Eiscue catch food?","It dangles its single hair into the water like a fishing lure",""],
+    ["To the nearest kilogram, how much does Eiscue weigh?","89 kg (about 196 lbs)",""],
+  ]},
+  {name:"Battle Ready",qs:[
+    ["Name any type that's super effective against Eiscue.","Fire, Fighting, Rock, or Steel",""],
+    ["How many types is Eiscue weak to?","Four",""],
+    ["What is the only type Eiscue resists?","Ice",""],
+    ["Competitive players pair Ice Face with which move that maxes Attack at the cost of half its HP?","Belly Drum","The ice soaks a physical hit while it sets up."],
+    ["Which stat stays exactly the same between Ice Face and Noice Face: Defense, Special Defense, or Attack?","Attack (80)","HP, Attack, and Special Attack are unchanged; Defense, Sp. Def, and Speed shift."],
+  ]},
+];
+
+let state={teams:[1,2,3,4].map(n=>({name:"Player "+n,score:0})),used:{}};
+let current=null;
+
+const $=id=>document.getElementById(id);
+function orbEl(cls){const d=document.createElement("div");d.className="orb "+cls;return d}
+
+function renderBoard(){
+  const b=$("board");b.innerHTML="";
+  CATS.forEach(c=>{const h=document.createElement("div");h.className="cat";h.textContent=c.name;b.appendChild(h)});
+  for(let r=0;r<5;r++){
+    CATS.forEach((c,ci)=>{
+      const t=document.createElement("button");t.className="tile";
+      const key=ci+"-"+r;
+      t.disabled=!!state.used[key];
+      t.setAttribute("aria-label",c.name+", "+TIERS[r].name+", "+TIERS[r].pts+" points");
+      t.appendChild(orbEl(TIERS[r].cls));
+      const s=document.createElement("span");s.textContent=TIERS[r].name;t.appendChild(s);
+      t.onclick=()=>openQ(ci,r);
+      b.appendChild(t);
+    });
+  }
+}
+function renderLegend(){
+  const l=$("legend");l.innerHTML="";
+  TIERS.forEach(t=>{const d=document.createElement("div");d.appendChild(orbEl(t.cls));
+    d.append(t.name+" = "+t.pts);l.appendChild(d)});
+}
+function renderScores(){
+  const s=$("scores");s.innerHTML="";
+  state.teams.forEach((tm,i)=>{
+    const d=document.createElement("div");d.className="team";
+    const inp=document.createElement("input");inp.value=tm.name;inp.setAttribute("aria-label","Player name");
+    inp.oninput=e=>{tm.name=e.target.value};
+    const p=document.createElement("div");p.className="pts"+(tm.score<0?" neg":"");p.textContent=tm.score;
+    d.append(inp,p);s.appendChild(d);
+  });
+}
+function awardButtons(container,pts,onDone){
+  container.innerHTML="";
+  state.teams.forEach(tm=>{
+    const row=document.createElement("div");row.className="row";
+    const b=document.createElement("b");b.textContent=tm.name;
+    const ok=document.createElement("button");ok.className="ok";ok.textContent="+"+(typeof pts==="function"?"":pts);
+    const no=document.createElement("button");no.className="no";no.textContent="−"+(typeof pts==="function"?"":pts);
+    const amt=()=>typeof pts==="function"?pts(tm):pts;
+    ok.textContent="Right +"+(typeof pts==="function"?"wager":pts);
+    no.textContent="Wrong −"+(typeof pts==="function"?"wager":pts);
+    ok.onclick=()=>{tm.score+=amt();row.remove();renderScores();onDone&&onDone()};
+    no.onclick=()=>{tm.score-=amt();row.remove();renderScores();onDone&&onDone()};
+    row.append(b,ok,no);container.appendChild(row);
+  });
+}
+function openQ(ci,r){
+  current={ci,r};
+  const [q,a,n]=CATS[ci].qs[r];
+  $("qOrb").className="orb "+TIERS[r].cls;
+  $("qCat").textContent=CATS[ci].name+" for "+TIERS[r].pts;
+  $("qText").textContent=q;$("qAns").textContent=a;$("qNote").textContent=n;
+  $("qNote").hidden=!n;
+  $("ansBox").hidden=true;$("reveal").hidden=false;
+  awardButtons($("award"),TIERS[r].pts);
+  $("qDlg").showModal();
+}
+$("reveal").onclick=()=>{$("ansBox").hidden=false;$("reveal").hidden=true};
+$("closeQ").onclick=()=>$("qDlg").close();
+$("qDlg").addEventListener("close",()=>{
+  if(current){state.used[current.ci+"-"+current.r]=true;current=null;renderBoard()}
+});
+$("reset").onclick=()=>{
+  if(!confirm("Start a new game? Scores and used questions will be cleared."))return;
+  state.used={};state.teams.forEach(t=>t.score=0);renderBoard();renderScores();
+};
+
+let wagers=[];
+$("finalBtn").onclick=()=>{
+  const wl=$("wagerList");wl.innerHTML="";
+  state.teams.forEach((tm,i)=>{
+    const max=tm.score>0?tm.score:500;
+    const l=document.createElement("label");
+    l.innerHTML=`<span></span><input type="number" min="0" max="${max}" value="0">`;
+    l.querySelector("span").textContent=tm.name+" (max "+max+")";
+    wl.appendChild(l);
+  });
+  $("fWager").hidden=false;$("fQ").hidden=true;$("fAns").hidden=true;$("fReveal").hidden=false;
+  $("fDlg").showModal();
+};
+$("lockWagers").onclick=()=>{
+  const inputs=[...$("wagerList").querySelectorAll("input")];
+  wagers=inputs.map((inp,i)=>{
+    const max=+inp.max;let v=Math.floor(+inp.value)||0;return Math.max(0,Math.min(max,v));
+  });
+  $("fWager").hidden=true;$("fQ").hidden=false;
+  awardButtons($("fAward"),tm=>wagers[state.teams.indexOf(tm)]);
+};
+$("fReveal").onclick=()=>{$("fAns").hidden=false;$("fReveal").hidden=true};
+$("fClose").onclick=()=>{
+  $("fDlg").close();
+  const top=Math.max(...state.teams.map(t=>t.score));
+  const winners=state.teams.filter(t=>t.score===top).map(t=>t.name);
+  setTimeout(()=>alert((winners.length>1?"It's a tie: ":"Winner: ")+winners.join(" & ")+" with "+top+" points!"),50);
+};
+
+renderBoard();renderLegend();renderScores();
+</script>
+</body>
+</html>
